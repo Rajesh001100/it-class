@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Information Tech Challengers</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <style>
+        /* General styles */
+        body,
+        html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #0d0d0d;
+            color: white;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        /* Canvas background */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Navigation bar */
+        nav#navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background-color: #111;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            box-shadow: 0 2px 8px rgba(0, 255, 255, 0.5);
+            z-index: 10;
+        }
+
+        nav#navbar button {
+            background: none;
+            border: none;
+            color: #0ff;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-right: 20px;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        nav#navbar button:hover,
+        nav#navbar button.active {
+            background-color: #0ff;
+            color: #000;
+        }
+
+        /* Login container */
+        #login-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(20, 20, 20, 0.85);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-radius: 20px;
+            width: 360px;
+            padding: 50px 35px;
+            z-index: 5;
+            text-align: center;
+        }
+
+        #login-container h1 {
+            color: #0ff;
+            margin-bottom: 25px;
+            font-family: monospace;
+        }
+
+        .input-group {
+            position: relative;
+            margin: 12px 0;
+            text-align: left;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #0ff;
+            opacity: 0.7;
+        }
+
+
+        #login-container input {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1rem;
+        }
+
+        #login-container input::placeholder {
+            color: #ccc;
+        }
+
+        #login-container button {
+            width: 100%;
+            padding: 12px;
+            background: #0ff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            color: #0d0d0d;
+            transition: 0.3s;
+        }
+
+        #login-container button:hover {
+            background: #00cccc;
+        }
+
+        #error {
+            color: #ff5555;
+            margin-top: 10px;
+            font-weight: bold;
+            min-height: 20px;
+        }
+
+        /* Dashboard container */
+        #dashboard {
+            position: relative;
+            z-index: 1;
+            padding: 70px 30px 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Sections */
+        section {
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        section.active {
+            display: block;
+        }
+
+        section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+
+        /* Section titles */
+        h2 {
+            color: #0ff;
+            font-family: monospace;
+            margin-bottom: 15px;
+        }
+
+        /* Students grid */
+        .student-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+        }
+
+        .student-card-mini {
+            border: 2px solid #0ff;
+            border-radius: 15px;
+            background: #eef2f4;
+            padding: 18px 8px 18px 8px;
+            text-align: center;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+            font-family: 'Segoe UI', sans-serif;
+            color: #111;
+            cursor: default;
+        }
+
+        .student-card-mini img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #fff;
+            margin-bottom: 8px;
+            border: 2px solid #ddd;
+        }
+
+        .student-card-mini .stu-name {
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 4px;
+        }
+
+        .student-card-mini .stu-reg,
+        .student-card-mini .stu-dob {
+            font-weight: 600;
+            font-size: 0.95em;
+            color: #018888;
+            margin-bottom: 6px;
+        }
+
+        .student-card-mini .stu-desc {
+            color: #444;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+
+        /* Photo gallery grid */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .photo-card {
+            position: relative;
+            border: 2px solid #0ff;
+            border-radius: 15px;
+            background: #181b22;
+            overflow: hidden;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 110px;
+            border-radius: 12px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .photo-card .delete-btn {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: rgba(255, 0, 0, 0.8);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            font-size: 1rem;
+            padding: 3px 8px;
+            opacity: 0.8;
+            transition: opacity 0.2s ease;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .photo-card .delete-btn:hover {
+            opacity: 1;
+        }
+
+        .photo-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #0ff;
+            z-index: 3;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            border-radius: 20px;
+            box-shadow: 0 0 20px #0ff;
+            position: relative;
+        }
+
+        .modal-content img {
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .modal-caption {
+            text-align: center;
+            margin: 10px 0;
+            color: #0ff;
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 2.5rem;
+            color: #0ff;
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none;
+            background: transparent;
+            border: none;
+            outline: none;
+        }
+
+        /* Other UI styles */
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            resize: vertical;
+        }
+
+        button {
+            background: #0ff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background: #00cccc;
+        }
+
+        #chatBox {
+            max-height: 320px;
+            overflow-y: auto;
+            background: #111;
+            margin-top: 10px;
+            border-radius: 12px;
+            padding: 10px;
+            color: #eee;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        /* Class Info styling */
+        #classInfoContainer {
+            max-width: 900px;
+            margin: 0 auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #e0f7fa;
+            line-height: 1.6;
+        }
+
+        #classInfoContainer h3 {
+            color: #00ffc8;
+            font-size: 1.8rem;
+            margin-bottom: 0.3em;
+        }
+
+        #classInfoContainer h4 {
+            color: #00d4aa;
+            font-size: 1.4rem;
+            margin-top: 0;
+        }
+
+        #classInfoContainer p {
+            font-size: 1.2rem;
+            margin: 0.8em 0;
+            color: #b2dfdb;
+        }
+
+        #classInfoContainer strong {
+            color: #1de9b6;
+        }
+
+        #classInfoTable {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1rem;
+            color: #b2dfdb;
+            margin-top: 1em;
+            text-align: center;
+        }
+
+        #classInfoTable thead tr {
+            background-color: #004d40;
+        }
+
+        #classInfoTable td,
+        #classInfoTable th {
+            border: 1px solid #00bfa5;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="bgCanvas"></canvas>
+
+    <div id="login-container" aria-label="Login form" role="main">
+        <h1>Information Tech Challengers</h1>
+        <div class="input-group">
+            <i class="fas fa-user" aria-hidden="true"></i>
+            <input id="username" placeholder="Username" aria-label="Username" type="text" />
+        </div>
+        <div class="input-group">
+            <i class="fas fa-lock" aria-hidden="true"></i>
+            <input id="password" placeholder="Password" aria-label="Password" type="password" />
+        </div>
+        <button onclick="login()">Login</button>
+        <p id="error" role="alert" aria-live="assertive"></p>
+    </div>
+
+    <nav id="navbar" aria-label="Main Navigation" role="navigation" style="display:none;">
+        <button class="nav-btn active" data-target="home-section" aria-current="page">Home</button>
+        <button class="nav-btn" data-target="class-info-section">Class Info</button>
+        <button class="nav-btn" data-target="students-section">Students</button>
+        <button class="nav-btn" data-target="communication-section">Communication</button>
+        <button class="nav-btn" data-target="photos-section">Photos</button>
+        <button class="nav-btn" data-target="fun-section">Fun</button>
+    </nav>
+
+    <main id="dashboard" role="main" style="display:none;">
+        <section id="home-section" class="section active" tabindex="0" aria-label="Home section">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <img src="logo.png" alt="Information Tech Challengers Logo" style="width:400px; height:300px;" />
+                </div>
+            </div>
+            <h1 style="
+        font-style: italic;
+        font-weight: bolder;
+        font-size: 2.8rem;
+        color: #00ffff;
+        text-align: center;
+        max-width: 90%;
+        margin: 0 auto;">
+                "Technology is not good or bad – it’s a tool. It depends on how we use it."
+                <br>— Tim O'Reilly
+            </h1>
+        </section>
+
+        <section id="class-info-section" class="section" tabindex="0" aria-label="Class information">
+            <h2>Class Info</h2>
+            <div id="classInfo" style="white-space: pre-line;"></div>
+        </section>
+
+        <section id="students-section" class="section" tabindex="0" aria-label="Student list">
+            <h2>Students</h2>
+            <div class="student-cards-grid" id="studentCardsGrid"></div>
+        </section>
+
+        <section id="communication-section" class="section" tabindex="0" aria-label="Class communication">
+            <h2>Communication</h2>
+            <textarea id="messageContent" placeholder="Share your message..." rows="4"
+                aria-label="Share your message"></textarea>
+            <button onclick="sendMessage()">Send</button>
+            <input type="file" id="fileInput" multiple style="display:none;" />
+            <button onclick="triggerFileInput()">📎</button>
+            <button onclick="startRecording()" id="recordBtn">🎤</button>
+
+            <div id="chatBox" aria-live="polite"></div>
+
+        </section>
+
+        <section id="photos-section" class="section" tabindex="0" aria-label="Photo gallery">
+            <h2>Photos</h2>
+            <h3>Photo Gallery</h3>
+
+
+            <div id="photoGrid"
+                style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;"></div>
+
+            <div class="photo-grid" id="photoGrid"></div>
+            <input id="photoUpload" type="file" accept="image/*" aria-label="Upload photo" />
+        </section>
+
+        <section id="fun-section" class="section" tabindex="0" aria-label="Fun section">
+            <h2>Fun</h2>
+            <button onclick="alert('Enjoy your break!')">Click for Fun</button>
+        </section>
+    </main>
+
+    <!-- Student modal -->
+    <div id="studentModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="studentModalTitle"
+        tabindex="-1">
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Close student details" onclick="closeModal()">&times;</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Photo modal -->
+    <div id="photoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="photoModalTitle" tabindex="-1">
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Close photo view" onclick="closePhotoModal()">&times;</button>
+            <img id="modalImage" alt="" />
+            <div class="modal-caption" id="modalCaption"></div>
+        </div>
+    </div>
+    <div id="mediaModal" class="modal" role="dialog" aria-modal="true" tabindex="-1"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.85); justify-content:center; align-items:center; z-index:9999;">
+        <div style="position:relative; max-width:90vw; max-height:90vh;">
+            <button onclick="closeMediaModal()"
+                style="position:absolute; top:10px; right:15px; font-size:2rem; background:none; border:none; color:#0ff; cursor:pointer;">&times;</button>
+            <img id="mediaModalImage" src="" alt="Photo"
+                style="max-width:100%; max-height:100vh; border-radius:12px; display:block;" />
+        </div>
+    </div>
+    <div id="mediaModal" class="modal" role="dialog" aria-modal="true" tabindex="-1"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.85); justify-content:center; align-items:center; z-index:9999;">
+        <div style="position:relative; max-width:90vw; max-height:90vh;">
+            <button onclick="closeMediaModal()"
+                style="position:absolute; top:10px; right:15px; font-size:2rem; background:none; border:none; color:#0ff; cursor:pointer;">&times;</button>
+            <img id="mediaModalImage" src="" alt="Photo"
+                style="max-width:100%; max-height:100vh; border-radius:12px; display:block;" />
+        </div>
+    </div>
+    <script>
+        // Step 3: User list and validation function
+        const users = [
+            { username: 'user001', password: 'pass001' },
+            { username: 'user002', password: 'pass002' },
+            // ... add remaining users
+            { username: 'user060', password: 'pass060' }
+        ];
+
+        function checkLogin(username, password) {
+            return users.some(user => user.username === username && user.password === password);
+        }
+
+        // Your login form handler
+        function handleLogin() {
+            const usernameInput = document.getElementById('username').value;
+            const passwordInput = document.getElementById('password').value;
+
+            if (checkLogin(usernameInput, passwordInput)) {
+                alert('Login successful!');
+                // Proceed to logged-in area
+            } else {
+                alert('Invalid username or password.');
+            }
+        }
+
+        document.getElementById('loginBtn').addEventListener('click', handleLogin);
+    </script>
+
+
+
+
+    <script>
+
+        let messages = [];
+        let mediaRecorder;
+        let audioChunks = [];
+
+        function startRecording() {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+                mediaRecorder.onstop = () => {
+                    let blob = new Blob(audioChunks, { type: 'audio/webm' });
+                    let url = URL.createObjectURL(blob);
+                    messages.push({
+                        type: 'audio',
+                        url: url,
+                        time: new Date().toLocaleTimeString()
+                    });
+                    loadMessages();
+                };
+                mediaRecorder.start();
+                document.getElementById('recordBtn').innerText = '⏹️';  // Show stop icon
+                document.getElementById('recordBtn').onclick = stopRecording;
+            }).catch(() => {
+                alert('Microphone access denied!');
+            });
+        }
+        function openPhotoModal(url, alt = '') {
+            const modal = document.getElementById('mediaModal');
+            const img = document.getElementById('mediaModalImage');
+            img.src = url;
+            img.alt = alt;
+            modal.style.display = 'flex';
+            modal.focus();
+        }
+
+        function closeMediaModal() {
+            const modal = document.getElementById('mediaModal');
+            modal.style.display = 'none';
+            const img = document.getElementById('mediaModalImage');
+            img.src = '';
+            img.alt = '';
+        }
+
+        // Close modal if user clicks outside the image
+        document.getElementById('mediaModal').addEventListener('click', (e) => {
+            if (e.target.id === 'mediaModal') {
+                closeMediaModal();
+            }
+        });
+
+
+        function stopRecording() {
+            if (mediaRecorder) {
+                mediaRecorder.stop();
+                document.getElementById('recordBtn').innerText = '🎤';  // Restore microphone icon
+                document.getElementById('recordBtn').onclick = startRecording;
+            }
+        }
+        function triggerFileInput() {
+            document.getElementById('fileInput').click();
+        }
+
+        document.getElementById('fileInput').addEventListener('change', function (event) {
+            const files = Array.from(event.target.files);
+            files.forEach(file => {
+                let type = file.type.startsWith('image/') ? 'photo' : 'file';
+                let url = URL.createObjectURL(file);
+                messages.push({
+                    type: type,
+                    fileName: file.name,
+                    url: url,
+                    time: new Date().toLocaleTimeString()
+                });
+            });
+            loadMessages();
+            event.target.value = ''; // Reset file input
+        });
+
+
+
+        // Detailed students array with names, rolls, DOB, and photo URLs
+        const students = [
+            { name: "Aathi Thamizhan.M", roll: "731224IT001", dob: "19-05-2007", photo: "731224IT001.png" },
+            { name: "Abinaya.G", roll: "731224IT002", dob: "05-10-2006", photo: "https://i.pravatar.cc/150?img=2" },
+            { name: "Anandhakannan.B", roll: "731224IT003", dob: "22-03-2007", photo: "731224IT003.png" },
+            { name: "Archana.V", roll: "731224IT005", dob: "21-01-2007", photo: "https://i.pravatar.cc/150?img=5" },
+            { name: "Asin.S", roll: "731224IT006", dob: "27-04-2007", photo: "https://i.pravatar.cc/150?img=6" },
+            { name: "Balamanikandhan.S", roll: "731224IT008", dob: "30-03-2007", photo: "731224IT008.png" },
+            { name: "Bharanishwaran.P", roll: "731224IT009", dob: "30-06-2007", photo: "731224IT009.png" },
+            { name: "Brindha.P", roll: "731224IT011", dob: "08-04-2007", photo: "https://i.pravatar.cc/150?img=10" },
+            { name: "Charumathi.P", roll: "731224IT012", dob: "08-05-2007", photo: "https://i.pravatar.cc/150?img=11" },
+            { name: "Dakshatha.V", roll: "731224IT013", dob: "16-09-2007", photo: "https://i.pravatar.cc/150?img=12" },
+            { name: "Devadarshini.L", roll: "731224IT015", dob: "06-04-2007", photo: "https://i.pravatar.cc/150?img=14" },
+            { name: "Dhanush.K", roll: "731224IT016", dob: "16-12-2006", photo: "731224IT016.png" },
+            { name: "Dhanushka.V", roll: "731224IT017", dob: "01-05-2007", photo: "https://i.pravatar.cc/150?img=16" },
+            { name: "Divya.G", roll: "731224IT018", dob: "25-06-2007", photo: "https://i.pravatar.cc/150?img=17" },
+            { name: "Elavarasan.R", roll: "731224IT019", dob: "09-07-2007", photo: "731224IT019.png" },
+            { name: "Gayathri N", roll: "731224IT020", dob: "02-05-2006", photo: "https://i.pravatar.cc/150?img=19" },
+            { name: "Gopika.P", roll: "731224IT022", dob: "27-02-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Hariharasuthan.P", roll: "731224IT023", dob: "20-12-2006", photo: "731224IT023.png" },
+            { name: "Harish.N", roll: "731224IT024", dob: "06-04-2007", photo: "731224IT024.png" },
+            { name: "Janani.K", roll: "731224IT025", dob: "03-01-2006", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Jaya Shree.K", roll: "731224IT026", dob: "16-02-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Jenisha.A", roll: "731224IT027", dob: "28-01-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Jeyasurya.S", roll: "731224IT028", dob: "05-09-2006", photo: "731224IT028.png" },
+            { name: "John lisha.S", roll: "731224IT029", dob: "14-09-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Johthi.T", roll: "731224IT030", dob: "10-01-2008", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Kannadhasan.R", roll: "731224IT031", dob: "09-05-2007", photo: "731224IT031.png" },
+            { name: "Karthik.D", roll: "731224IT032", dob: "15-06-2007", photo: "731224IT032.png" },
+            { name: "Kathir.P", roll: "731224IT033", dob: "23-12-2006", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Kathiravan.A", roll: "731224IT034", dob: "16-09-2006", photo: "731224IT034.png" },
+            { name: "Kavibharathi.V", roll: "731224IT035", dob: "11-12-2006", photo: "731224IT035.png" },
+            { name: "Kaviya.S", roll: "731224IT036", dob: "14-01-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Kiruthika.A", roll: "731224IT038", dob: "29-01-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Madevi.A", roll: "731224IT039", dob: "14-04-2006", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Mohanraj.P", roll: "731224IT041", dob: "01-04-2007", photo: "731224IT041.png" },
+            { name: "Mukilan.B", roll: "731224IT042", dob: "03-06-2006", photo: "731224IT042.png" },
+            { name: "Murugan.M.S", roll: "731224IT043", dob: "04-04-2005", photo: "731224IT043.png" },
+            { name: "Niruba.R", roll: "731224IT044", dob: "17-03-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Nisha.P", roll: "731224IT045", dob: "04-05-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Nishap Antony.M", roll: "731224IT046", dob: "27-06-2007", photo: "731224IT046.png" },
+            { name: "Nithya.A", roll: "731224IT047", dob: "11-02-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Nithya.T", roll: "731224IT048", dob: "21-08-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Palanivel.V", roll: "731224IT049", dob: "17-10-2007", photo: "731224IT049.png" },
+            { name: "Penasir.J", roll: "731224IT051", dob: "09-04-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Priyadharshini.K", roll: "731224IT052", dob: "01-04-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Ragul.V", roll: "731224IT054", dob: "07-03-2007", photo: "731224IT054.png" },
+            { name: "Rajesh.M", roll: "731224IT055", dob: "26-02-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Sakthika.B", roll: "731224IT057", dob: "16-08-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Sathana.S", roll: "731224IT060", dob: "08-04-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Shanmugapriya.B", roll: "731224IT061", dob: "14-10-2006", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Sharma Ilanthirayan.P", roll: "731224IT062", dob: "22-05-2006", photo: "731224IT062.png" },
+            { name: "Shivani.K", roll: "731224IT063", dob: "03-01-2006", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Shobana.V", roll: "731224IT064", dob: "23-01-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Shree Mathi.B", roll: "731224IT065", dob: "09-09-2006", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Srinithi.J", roll: "731224IT066", dob: "06-12-2006", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Sureka.T", roll: "731224IT067", dob: "04-11-2006", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Vaishali.C", roll: "731224IT068", dob: "19-02-2007", photo: "https://i.pravatar.cc/150?img=20" },
+            { name: "Yogalakshmi.S", roll: "731224IT070", dob: "02-06-2007", photo: "https://i.pravatar.cc/150?img=20" },
+
+
+
+
+            // Add remaining students similarly...
+        ];
+
+        function showDashboard() {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('navbar').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+
+        function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = '';
+
+            if (!username || !password) {
+                errorEl.textContent = "Please enter username and password";
+                return;
+            }
+
+            const foundUser = users.find(u => u.username === username && u.password === password);
+
+            if (!foundUser) {
+                errorEl.textContent = "Invalid username or password";
+                return;
+            }
+
+            // Valid login
+            showDashboard();
+            loadClassInfo();
+            renderStudents();
+            renderPhotos();
+            loadMessages();
+        }
+
+
+        function loadClassInfo() {
+            const classInfoHTML = `
+<div id="classInfoContainer">
+  <h3>Total Class Members: <span style="color:#00e676;">57</span></h3>
+  <h4>Boys: <span style="color:#64ffda;">23</span> | Girls: <span style="color:#64ffda;">34</span></h4>
+  <p><strong>Department:</strong> Information Technology</p>
+  <p><strong>Class Tutor:</strong> Mr. S. Murugashankar</p>
+  <p><strong>Head Of Department:</strong> Dr. Sathyabalaji</p>
+
+  <h3>Subjects & Staff</h3>
+  <ol>
+    <li><strong>Random Variables and Discrete Structures (24MA301)</strong> - Mrs. M. Rajathi</li>
+    <li><strong>Computer Architecture (24CS302)</strong> - Mr. G. Tamilselvan</li>
+    <li><strong>Data Structures (24CS303)</strong> - Mr. S. Muruga (Tutor)</li>
+    <li><strong>Object Oriented Programming (24CS304)</strong> - Mrs. L. Karthika</li>
+    <li><strong>Startup Management (24MS305)</strong> - Mr. R. Prasanth</li>
+    <li><strong>Digital System Design (24EC305)</strong> - Mrs. P. Kawya</li>
+    <li><strong>Data Structures Laboratory (24CS306)</strong> - Mrs. M. Sathiapriya</li>
+    <li><strong>Object Oriented Programming Java Lab (24CS307)</strong> - Mrs. L. Karthika</li>
+    <li><strong>Soft Skills & Effective Communication (24GE308)</strong> - Mrs. K. Ranjitha</li>
+  </ol>
+
+  <h3>Class Timetable</h3>
+  <table id="classInfoTable" aria-label="Class Timetable">
+    <thead>
+      <tr>
+        <th>Day / Time</th>
+        <th>9:15 - 10:00</th>
+        <th>10:00 - 10:45</th>
+        <th>10:45 - 11:00</th>
+        <th>11:00 - 11:45</th>
+        <th>11:45 - 12:30</th>
+        <th>12:30 - 1:15</th>
+        <th>1:15 - 2:00</th>
+        <th>2:00 - 2:45</th>
+        <th>2:45 - 3:00</th>
+        <th>3:00 - 3:45</th>
+        <th>3:45 - 4:30</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Monday</td>
+        <td>DS</td>
+        <td>SM</td>
+        <td>-</td>
+        <td>RV & DS</td>
+        <td>DS</td>
+        <td>-</td>
+        <td>OOP LAB</td>
+        <td>OOP LAB</td>
+        <td>-</td>
+        <td>OOP LAB</td>
+        <td>OOP LAB</td>
+      </tr>
+      <tr>
+        <td>Tuesday</td>
+        <td>CA</td>
+        <td>DSD</td>
+        <td>-</td>
+        <td>DS</td>
+        <td>RV & DS</td>
+        <td>-</td>
+        <td>DSD LAB</td>
+        <td>DSD LAB</td>
+        <td>-</td>
+        <td>OOP</td>
+        <td>CA</td>
+      </tr>
+      <tr>
+        <td>Wednesday</td>
+        <td>DSD</td>
+        <td>SM</td>
+        <td>BREAK</td>
+        <td>OOP</td>
+        <td>CA</td>
+        <div class="vertical-text">vertical text</div>
+        <td>LUNCH</td>
+    
+    
+        <td>S.S LAB</td>
+        <td>S.S LAB</td>
+        <td>BREAK</td>
+        <td>PLACEMENT</td>
+        <td>PT</td>
+      </tr>
+      <tr>
+        <td>Thursday</td>
+        <td>OOP</td>
+        <td>DS</td>
+        <td>-</td>
+        <td>RV & DS</td>
+        <td>SM</td>
+        <td>-</td>
+        <td>DS LAB</td>
+        <td>DS LAB</td>
+        <td>-</td>
+        <td>DS LAB</td>
+        <td>DS LAB</td>
+      </tr>
+      <tr>
+        <td>Friday</td>
+        <td>RV & DS</td>
+        <td>OOP</td>
+        <td>-</td>
+        <td>SM</td>
+        <td>DS</td>
+        <td>-</td>
+        <td>DSD</td>
+        <td>LIB</td>
+        <td>-</td>
+        <td>CA</td>
+        <td>RV & DS</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+`;
+
+            document.getElementById('classInfo').innerHTML = classInfoHTML;
+        }
+
+        function renderStudents() {
+            const container = document.getElementById('studentCardsGrid');
+            container.innerHTML = '';
+            students.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'student-card-mini';
+                card.innerHTML = `
+          <img src="${s.photo}" alt="Photo of ${s.name}" />
+          <div class="stu-name">${s.name}</div>
+          <div class="stu-reg">Reg. No: ${s.roll}</div>
+          <div class="stu-dob">DOB: ${s.dob}</div>
+        `;
+                container.appendChild(card);
+            });
+        }
+
+        let photos = [
+            { filename: 'photo1.jpg', url: 'photo1.jpg' },
+            { filename: 'photo2.jpg', url: 'photo2.jpg' },
+            { filename: 'photo3.jpg', url: 'photo3.jpg' },
+            { filename: 'photo4.jpg', url: 'photo4.jpg' },
+            { filename: 'photo5.jpg', url: 'photo5.jpg' },
+            { filename: 'photo6.jpg', url: 'photo6.jpg' },
+            { filename: 'photo7.jpg', url: 'photo7.jpg' },
+            { filename: 'photo8.jpg', url: 'photo8.jpg' },
+            { filename: 'photo9.png', url: 'photo9.png' }
+        ];
+
+        function renderPhotos() {
+            const grid = document.getElementById('photoGrid');
+            grid.innerHTML = '';
+            photos.forEach((photo, idx) => {
+                const card = document.createElement('div');
+                card.className = 'photo-card';
+                card.innerHTML = `
+          <img src="${photo.url}" alt="Photo ${idx + 1}" />
+          <button class="delete-btn" aria-label="Delete photo" onclick="deletePhoto(${idx}); event.stopPropagation();">&#10006;</button>
+        `;
+                card.querySelector('img').addEventListener('click', () => openPhotoModal(idx));
+                grid.appendChild(card);
+            });
+        }
+
+        function deletePhoto(idx) {
+            if (confirm('Are you sure to delete this photo?')) {
+                photos.splice(idx, 1);
+                renderPhotos();
+                // Call backend to delete if applicable
+            }
+        }
+
+        let currentPhotoIndex;
+        function openPhotoModal(idx) {
+            currentPhotoIndex = idx;
+            const photo = photos[idx];
+            const modal = document.getElementById('photoModal');
+            document.getElementById('modalImage').src = photo.url;
+            document.getElementById('modalImage').alt = `Photo ${idx + 1}`;
+            document.getElementById('modalCaption').textContent = `${idx + 1} / ${photos.length}`;
+            modal.style.display = 'flex';
+            document.getElementById('photoModal').focus();
+        }
+
+        function closePhotoModal() {
+            const modal = document.getElementById('photoModal');
+            modal.style.display = 'none';
+            document.getElementById('modalImage').src = '';
+            document.getElementById('modalImage').alt = '';
+        }
+
+        document.getElementById('photoModal').addEventListener('click', function (e) {
+            if (e.target === this) closePhotoModal();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closePhotoModal();
+        });
+
+        async function sendMessage() {
+            const textarea = document.getElementById('messageContent');
+            const content = textarea.value.trim();
+            if (!content) {
+                alert("Please enter a message.");
+                return;
+            }
+            messages.push({
+                content: content,
+                sender: 'You', // Add sender name here
+                time: new Date().toLocaleTimeString()
+            });
+            textarea.value = '';
+            loadMessages();
+        }
+
+
+        async function loadMessages() {
+            const chatBox = document.getElementById('chatBox');
+            if (messages.length === 0) {
+                chatBox.innerHTML = '<p>No messages yet.</p>';
+                return;
+            }
+            chatBox.innerHTML = messages.map((msg, index) => {
+                const sender = msg.sender ?? 'Unknown';
+                const deleteBtn = `<button onclick="deleteMessage(${index})" style="margin-left:8px; cursor:pointer; background:none; border:none; color:#f66; font-weight:bold;" aria-label="Delete message">&#10006;</button>`;
+
+                if (msg.type === 'photo') {
+                    return `<div style="margin-bottom:12px; cursor:pointer;" tabindex="0" aria-label="Photo message from ${sender}">
+                <strong>${sender}:</strong><br/>
+                <img src="${msg.url}" alt="${msg.fileName ?? ''}" style="max-width:160px; max-height:120px; border-radius:12px;" onclick="openPhotoModal('${msg.url}', '${msg.fileName ?? ''}')"/>
+                <br>
+                <small style="color:#bbb;">${msg.fileName ?? ''} (${msg.time})</small>
+                ${deleteBtn}
+            </div>`;
+                } else if (msg.type === 'file') {
+                    return `<div style="margin-bottom:12px;" tabindex="0" aria-label="File message from ${sender}">
+                <strong>${sender}:</strong><br/>
+                <a href="${msg.url}" download="${msg.fileName ?? ''}" style="color:#0ff;">
+                    ${msg.fileName ?? 'Attached file'}
+                </a>
+                <br>
+                <small style="color:#bbb;">(${msg.time})</small>
+                ${deleteBtn}
+            </div>`;
+                } else if (msg.type === 'audio') {
+                    return `<div style="margin-bottom:12px;" tabindex="0" aria-label="Audio message from ${sender}">
+                <strong>${sender}:</strong><br/>
+                <audio controls src="${msg.url}" style="vertical-align:middle;"></audio>
+                <br>
+                <small style="color:#bbb;">${msg.fileName ?? 'Voice message'} (${msg.time})</small>
+                ${deleteBtn}
+            </div>`;
+                } else if (msg.content) {
+                    return `<div style="margin-bottom:12px;" tabindex="0" aria-label="Text message from ${sender}">
+                <strong>${sender}:</strong>
+                <span style="display:inline-block; background:#222; color:#0ff; padding:7px 15px; border-radius:15px; font-size:1rem; margin-left:6px;">
+                    ${msg.content}
+                </span>
+                <small style="color:#bbb; margin-left:8px;">(${msg.time})</small>
+                ${deleteBtn}
+            </div>`;
+                }
+                return '';
+            }).join('');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        function deleteMessage(index) {
+            if (confirm('Are you sure you want to delete this message?')) {
+                messages.splice(index, 1);
+                loadMessages();
+            }
+        }
+
+
+
+        document.querySelectorAll('.nav-btn').forEach(button => {
+            button.onclick = () => {
+                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                document.querySelectorAll('section').forEach(section => section.classList.remove('active'));
+                const target = button.getAttribute('data-target');
+                document.getElementById(target).classList.add('active');
+            };
+        });
+
+        document.getElementById('photoUpload').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const newUrl = URL.createObjectURL(file);
+            photos.push({ filename: file.name, url: newUrl });
+            renderPhotos();
+        });
+
+        // Background particle animation (unchanged)
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+        const particleCount = 120;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.radius = Math.random() * 2 + 1;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.color = '#0ff';
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                this.draw();
+            }
+        }
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0,0,0,0.15)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, idx) => {
+                p.update();
+                for (let j = idx + 1; j < particles.length; j++) {
+                    let dx = p.x - particles[j].x;
+                    let dy = p.y - particles[j].y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 100) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0,255,255,${(100 - dist) / 100 * 0.3})`;
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            });
+            window.requestAnimationFrame(animate);
+        }
+        animate();
+
+        const codeSnippets = [
+            'for(i=0;i<10;i++)console.log(i);',
+            'let x = Math.random();',
+            'function hello(){return "CS";}',
+            'if(user==true)login();',
+            'const pi = 3.14159;'
+        ];
+
+        function spawnCodeLine() {
+            const div = document.createElement('div');
+            div.className = 'code-line';
+            div.style.position = 'fixed';
+            div.style.left = Math.random() * window.innerWidth + 'px';
+            div.style.top = '-20px';
+            div.style.color = '#0ff';
+            div.style.fontFamily = 'monospace';
+            div.style.opacity = '0.1';
+            div.style.pointerEvents = 'none';
+            div.style.userSelect = 'none';
+            div.style.zIndex = '5000';
+            div.style.fontSize = (Math.random() * 14 + 10) + 'px';
+            div.textContent = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
+            document.body.appendChild(div);
+
+            let top = -20;
+            const interval = setInterval(() => {
+                top += 1;
+                div.style.top = top + 'px';
+                if (top > window.innerHeight) {
+                    clearInterval(interval);
+                    div.remove();
+                }
+            }, 30);
+        }
+
+        setInterval(spawnCodeLine, 300);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+    </script>
+</body>
+
+</html>
